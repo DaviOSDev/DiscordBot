@@ -98,7 +98,7 @@ async def Guilherme(ctx):
 
 @bot.command()
 async def Ze(ctx):
-    Zefile = discord.File("Ze.jpeg", Filename="Zezinho.jpeg")
+    Zefile = discord.File("Ze.jpeg", filename="Zezinho.jpeg")
     await ctx.send(file= Zefile)
 
 
