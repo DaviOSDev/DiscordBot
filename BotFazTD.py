@@ -72,10 +72,10 @@ async def char(ctx, arg):
     charm_draw.line(((393), (426))) #y
 
     if arg == '':
-        nome = arg.split('_')
-        nome_junto = ' '.join(nome)
         name.text(xy=(100, 20), text =f"{random.choice(first_name)} {random.choice(last_name)}", fill=(0, 0, 120), font= fonte)
     else:
+        nome = arg.split('_')
+        nome_junto = ' '.join(nome)
         name.text(xy=(100, 20), text = arg, fill=(0, 0, 120), font= fonte)
     strengh_draw.text(xy=(301, 94.5), text =f"{strengh}", fill=(0, 0, 120), anchor = 'mm' ,font= fonte_numeros)
     intelligence_draw.text(xy=(301, 160), text =f"{intelligence}", fill=(0, 0, 120), anchor = 'mm' ,font= fonte_numeros)
