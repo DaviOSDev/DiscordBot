@@ -67,8 +67,7 @@ async def char(ctx):
     constitution_draw.text(xy=(301, 352), text =f"{constitution}", fill=(0, 0, 120), anchor = 'mm' ,font= fonte_numeros)
     charm_draw.text(xy=(301, 410), text =f"{charm}", fill=(0, 0, 120), anchor = 'mm' ,font= fonte_numeros)
     
-    image.save('FichaMod.png')
-    await ctx.send_file('FichaMod.png')
+    await ctx.send(image)
 
 @bot.command()
 async def Luciana(ctx):
