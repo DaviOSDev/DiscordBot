@@ -92,7 +92,9 @@ async def Tobi(ctx):
 
 @bot.command()
 async def Guilherme(ctx):
-    await ctx.send(file= "Guilherme.jpeg")
+    Gui = "Guilherme.jpeg"
+    guifile = discord.File(Gui, filename="Guilhermer.jpeg")
+    await ctx.send(file= guifile)
 
 
 
