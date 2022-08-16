@@ -115,4 +115,4 @@ async def Ze(ctx):
     await ctx.send(file= Zefile)
 
 
-bot.run('MTAwODIyNTE4Mjg0ODEyNzAxNg.GamufE.G2h5UUmMZloYyUFKqxB17VKH2X-VUjsCMzq4po')
+bot.run(os.getenv('Token'))
