@@ -37,7 +37,7 @@ async def roll(ctx, arg):
         await ctx.send("PARA DE MANDAR LETRA FDP")
 
 @bot.command()
-async def char(ctx, arg):
+async def char(ctx, arg='aleatorio'):
     
     image = Image.open('Ficha.png')
     first_name = ['Lakye', 'Debora' ,'Yasmin', 'Rogerio', 'Will', 'Abigail', 'Zeke', 'Daenerys', 'Jason', 'Albert', 'Jack', 'Marie', 'Nickola']
@@ -76,7 +76,7 @@ async def char(ctx, arg):
     else:
         nome = arg.split('_')
         nome_junto = ' '.join(nome)
-        name.text(xy=(100, 20), text = arg, fill=(0, 0, 120), font= fonte)
+        name.text(xy=(100, 20), text = nome_junto, fill=(0, 0, 120), font= fonte)
     strengh_draw.text(xy=(301, 94.5), text =f"{strengh}", fill=(0, 0, 120), anchor = 'mm' ,font= fonte_numeros)
     intelligence_draw.text(xy=(301, 160), text =f"{intelligence}", fill=(0, 0, 120), anchor = 'mm' ,font= fonte_numeros)
     wisdom_draw.text(xy=(301, 222), text =f"{wisdom}", fill=(0, 0, 120), anchor = 'mm' ,font= fonte_numeros)
