@@ -24,6 +24,7 @@ async def roll(ctx, arg):
 
 @bot.command()
 async def char(ctx):
+    
     image = Image.open('Ficha.png')
     fonte = ImageFont.truetype('Shiver Me Timbers NF.ttf', 35)
     fonte_numeros = ImageFont.truetype('Awaken.otf',23)
@@ -65,7 +66,9 @@ async def char(ctx):
     dexterity_draw.text(xy=(301, 288), text =f"{dexterity}", fill=(0, 0, 120), anchor = 'mm' ,font= fonte_numeros)
     constitution_draw.text(xy=(301, 352), text =f"{constitution}", fill=(0, 0, 120), anchor = 'mm' ,font= fonte_numeros)
     charm_draw.text(xy=(301, 410), text =f"{charm}", fill=(0, 0, 120), anchor = 'mm' ,font= fonte_numeros)
-    await ctx.send_file(image)
+    
+    image.save('FichaMod.png')
+    await ctx.send_file('FichaMod.png')
 
 @bot.command()
 async def Luciana(ctx):
