@@ -59,9 +59,6 @@ async def char(ctx, arg):
     constitution_draw.line(((333), (365))) #y
     charm_draw.line = strengh_draw.line #x
     charm_draw.line(((393), (426))) #y
-    if arg == True:
-        arg.strip()
-
 
     name.text(xy=(100, 20), text =f"{random.choice(first_name)} {random.choice(last_name)}", fill=(0, 0, 120), font= fonte)
     strengh_draw.text(xy=(301, 94.5), text =f"{strengh}", fill=(0, 0, 120), anchor = 'mm' ,font= fonte_numeros)
