@@ -24,7 +24,7 @@ async def roll(ctx, arg):
         await ctx.send('MANDA LETRA N ARROMBADO')
 
 @bot.command()
-async def char(ctx, arg):
+async def char(ctx):
     
     image = Image.open('Ficha.png')
     fonte = ImageFont.truetype('Shiver Me Timbers NF.ttf', 35)
