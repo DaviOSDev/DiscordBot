@@ -43,3 +43,14 @@ constitution_draw.text(xy=(301, 352), text =f"{constitution}", fill=(0, 0, 120),
 charm_draw.text(xy=(301, 410), text =f"{charm}", fill=(0, 0, 120), anchor = 'mm' ,font= fonte_numeros)
 
 image.show()
+
+
+n = random.randint(1, 6)
+dado_image = Image.open("Dado.jpg")
+dado_draw = ImageDraw.Draw(dado_image)
+dado_draw.line(((18), (182))) #x
+dado_draw.line(((9), (191))) #y
+fonte_numeros = ImageFont.truetype('Awaken.otf',50)
+dado_draw.text(xy=(100, 110), text=f"{n}", fill=(255, 255, 255), anchor= "mm", font=fonte_numeros)
+dado_image.show()
+

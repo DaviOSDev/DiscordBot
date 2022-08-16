@@ -9,6 +9,9 @@ from io import BytesIO
 bot = commands.Bot('?')
 
 load_dotenv(find_dotenv())
+    
+fonte = ImageFont.truetype('Shiver Me Timbers NF.ttf', 35)
+fonte_numeros = ImageFont.truetype('Awaken.otf',23)
 
 @bot.event
 async def on_ready():
@@ -19,16 +22,24 @@ async def roll(ctx, arg):
     try:
         arg = int(arg)
         n = random.randint(1, arg)
-        await ctx.send(f'O valor do d{arg} foi: {n}!')
+        dado_image = Image.open("Dado.png")
+        dado_draw = ImageDraw.Draw(dado_image)
+        dado_draw.line(((18), (182))) #x
+        dado_draw.line(((9), (191))) #y
+        fonte_numeros = ImageFont.truetype('Awaken.otf',50)
+        dado_draw.text(xy=(100, 110), text=f"{n}", fill=(255, 255, 255), anchor= "mm", font=fonte_numeros)
+        bytes_dado = BytesIO()
+        dado_image.save(bytes_dado, format="PNG")
+        bytes_dado.seek(0)
+        dado_file = discord.File(bytes_dado, filename="dado_imageMOD.png")
+        await ctx.send(file= dado_file)
     except:
-        await ctx.send('MANDA LETRA N ARROMBADO')
+        await ctx.send("PARA DE MANDAR LETRA FDP")
 
 @bot.command()
-async def char(ctx):
+async def char(ctx, arg):
     
     image = Image.open('Ficha.png')
-    fonte = ImageFont.truetype('Shiver Me Timbers NF.ttf', 35)
-    fonte_numeros = ImageFont.truetype('Awaken.otf',23)
     first_name = ['Lakye', 'Debora' ,'Yasmin', 'Rogerio', 'Will', 'Abigail', 'Zeke', 'Daenerys', 'Jason', 'Albert', 'Jack', 'Marie', 'Nickola']
     last_name = ['Tesla', 'Curie', 'Mesquita', 'Costa', 'Bourbon', 'Uchoas', 'Lopes', 'Firmino', 'Olivier']
 
@@ -60,7 +71,12 @@ async def char(ctx):
     charm_draw.line = strengh_draw.line #x
     charm_draw.line(((393), (426))) #y
 
-    name.text(xy=(100, 20), text =f"{random.choice(first_name)} {random.choice(last_name)}", fill=(0, 0, 120), font= fonte)
+    if arg:
+        nome = arg.split('_')
+        nome_junto = ' '.join(nome)
+        name.text(xy=(100, 20), text =nome_junto, fill=(0, 0, 120), font= fonte)
+    else:
+        name.text(xy=(100, 20), text =f"{random.choice(first_name)} {random.choice(last_name)}", fill=(0, 0, 120), font= fonte)
     strengh_draw.text(xy=(301, 94.5), text =f"{strengh}", fill=(0, 0, 120), anchor = 'mm' ,font= fonte_numeros)
     intelligence_draw.text(xy=(301, 160), text =f"{intelligence}", fill=(0, 0, 120), anchor = 'mm' ,font= fonte_numeros)
     wisdom_draw.text(xy=(301, 222), text =f"{wisdom}", fill=(0, 0, 120), anchor = 'mm' ,font= fonte_numeros)
@@ -81,7 +97,7 @@ async def Luciana(ctx):
 
 @bot.command()
 async def Joao(ctx):
-    await ctx.send('O jao eh delicioso')
+    await ctx.send("O JAO E FODA")
 
 @bot.command()
 async def Tobi(ctx):
@@ -99,4 +115,4 @@ async def Ze(ctx):
     await ctx.send(file= Zefile)
 
 
-bot.run(os.getenv('Token'))
+bot.run('MTAwODIyNTE4Mjg0ODEyNzAxNg.GamufE.G2h5UUmMZloYyUFKqxB17VKH2X-VUjsCMzq4po')
