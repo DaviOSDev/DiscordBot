@@ -1,3 +1,4 @@
+from pydoc import describe
 import discord
 from discord.ext import commands
 import random
@@ -17,7 +18,7 @@ fonte_numeros = ImageFont.truetype('Awaken.otf',23)
 async def on_ready():
     print(f"Logged as {bot.user}!")
 
-@bot.command()
+@bot.command(description="Rolls an dice of your choice(d3, d6, d10, d20, d100), to choose you need to type the number after the command")
 async def roll(ctx, arg):
     try:
         arg = int(arg)
@@ -36,7 +37,7 @@ async def roll(ctx, arg):
     except:
         await ctx.send("PARA DE MANDAR LETRA FDP")
 
-@bot.command()
+@bot.command(description="Creates an RPG character(you can choose the name by typping it after the command)")
 async def char(ctx, arg='aleatorio'):
     
     image = Image.open('Ficha.png')
@@ -91,28 +92,29 @@ async def char(ctx, arg='aleatorio'):
     
     await ctx.send("Character made =", file= dfile)
 
-@bot.command()
+@bot.command(description="calva")
 async def Luciana(ctx):
     await ctx.send('CALVISSIMA')
 
-@bot.command()
+@bot.command(description="Jesus")
 async def Joao(ctx):
     await ctx.send("O JAO E FODA")
 
-@bot.command()
+@bot.command(description="goblin Trader")
 async def Tobi(ctx):
     await ctx.send('ANAOZINHO')
 
-@bot.command()
+@bot.command(descriotion="chad")
 async def Guilherme(ctx):
     Gui = "Guilherme.jpeg"
     guifile = discord.File(Gui, filename="Guilhermer.jpeg")
     await ctx.send(file= guifile)
 
-@bot.command()
+@bot.command(description="ai, olha o tapa")
 async def Ze(ctx):
     Zefile = discord.File("Ze.jpeg", filename="Zezinho.jpeg")
     await ctx.send(file= Zefile)
+
 
 
 bot.run(os.getenv('Token'))
