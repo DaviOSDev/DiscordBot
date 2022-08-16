@@ -4,6 +4,7 @@ import random
 import os
 from dotenv import load_dotenv , find_dotenv
 from PIL import Image, ImageDraw, ImageFont, ImageOps
+from io import BytesIO
 
 bot = commands.Bot('?')
 
@@ -67,8 +68,12 @@ async def char(ctx):
     constitution_draw.text(xy=(301, 352), text =f"{constitution}", fill=(0, 0, 120), anchor = 'mm' ,font= fonte_numeros)
     charm_draw.text(xy=(301, 410), text =f"{charm}", fill=(0, 0, 120), anchor = 'mm' ,font= fonte_numeros)
     
-    image.save('FichaMod.png')
-    await ctx.send(file=discord.file('FichaMod.png'))
+    bytes = BytesIO()
+    image.save(bytes, format="PNG")
+    bytes.seek(0)
+    dfile = discord.File(bytes, filename="ImageMOD.png")
+    
+    await ctx.send("Character made =", file= dfile)
 
 @bot.command()
 async def Luciana(ctx):
