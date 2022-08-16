@@ -24,7 +24,7 @@ async def roll(ctx, arg):
         await ctx.send('MANDA LETRA N ARROMBADO')
 
 @bot.command()
-async def char(ctx):
+async def char(ctx, arg):
     
     image = Image.open('Ficha.png')
     fonte = ImageFont.truetype('Shiver Me Timbers NF.ttf', 35)
@@ -59,6 +59,9 @@ async def char(ctx):
     constitution_draw.line(((333), (365))) #y
     charm_draw.line = strengh_draw.line #x
     charm_draw.line(((393), (426))) #y
+    if arg == True:
+        arg.strip()
+
 
     name.text(xy=(100, 20), text =f"{random.choice(first_name)} {random.choice(last_name)}", fill=(0, 0, 120), font= fonte)
     strengh_draw.text(xy=(301, 94.5), text =f"{strengh}", fill=(0, 0, 120), anchor = 'mm' ,font= fonte_numeros)
@@ -86,6 +89,10 @@ async def Joao(ctx):
 @bot.command()
 async def Tobi(ctx):
     await ctx.send('ANAOZINHO')
+
+@bot.command()
+async def Guilherme(ctx):
+    await ctx.send(file= "Guilherme.jpeg")
 
 
 
