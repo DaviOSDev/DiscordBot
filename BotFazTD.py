@@ -96,8 +96,10 @@ async def Guilherme(ctx):
     guifile = discord.File(Gui, filename="Guilhermer.jpeg")
     await ctx.send(file= guifile)
 
-
-
+@bot.command()
+async def Ze(ctx):
+    Zefile = discord.File(Ze.jpeg, Filename="Zezinho.jpeg")
+    await ctx.send(file= Zefile)
 
 
 bot.run(os.getenv('Token'))
