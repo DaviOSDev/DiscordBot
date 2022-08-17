@@ -115,6 +115,8 @@ async def Ze(ctx):
     Zefile = discord.File("Ze.jpeg", filename="Zezinho.jpeg")
     await ctx.send(file= Zefile)
 
-
+@bot.command(description='SHHHHH')
+async def Ta_sabendo_em(ctx):
+    await ctx.send('Shhhh')
 
 bot.run(os.getenv('Token'))
