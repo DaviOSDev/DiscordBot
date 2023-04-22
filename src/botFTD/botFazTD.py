@@ -1,7 +1,7 @@
-import discord
-from discord.ext import commands
 import random
 import os
+import discord
+from discord.ext import commands
 from dotenv import load_dotenv , find_dotenv
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
