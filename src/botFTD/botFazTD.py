@@ -1,10 +1,9 @@
-from pydoc import describe
 import discord
 from discord.ext import commands
 import random
 import os
 from dotenv import load_dotenv , find_dotenv
-from PIL import Image, ImageDraw, ImageFont, ImageOps
+from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 
 bot = commands.Bot('?')
@@ -92,31 +91,6 @@ async def char(ctx, arg='aleatorio'):
     
     await ctx.send("Character made =", file= dfile)
 
-@bot.command(description="calva")
-async def Luciana(ctx):
-    await ctx.send('CALVISSIMA')
 
-@bot.command(description="Jesus")
-async def Joao(ctx):
-    await ctx.send("O JAO E FODA")
-
-@bot.command(description="goblin Trader")
-async def Tobi(ctx):
-    await ctx.send('ANAOZINHO')
-
-@bot.command(descriotion="chad")
-async def Guilherme(ctx):
-    Gui = "Guilherme.jpeg"
-    guifile = discord.File(Gui, filename="Guilhermer.jpeg")
-    await ctx.send(file= guifile)
-
-@bot.command(description="ai, olha o tapa")
-async def Ze(ctx):
-    Zefile = discord.File("Ze.jpeg", filename="Zezinho.jpeg")
-    await ctx.send(file= Zefile)
-
-@bot.command(description='SHHHHH')
-async def Ta_sabendo_em(ctx):
-    await ctx.send('Shhhh')
 
 bot.run(os.getenv('Token'))
