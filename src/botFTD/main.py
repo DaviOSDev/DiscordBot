@@ -9,7 +9,6 @@ import commandFunctions as CF
 
 bot = commands.Bot('?')
 
-
 load_dotenv(find_dotenv())
 
 @bot.event
@@ -20,4 +19,8 @@ async def on_ready():
 async def char(ctx, arg='aleatorio'):
     await CF.char(ctx, arg)
 
-bot.run('MTAwODIyNTE4Mjg0ODEyNzAxNg.Gp7GRS.nUYsl1n0w4UuB35iJCaZp30Q7U1rGOTOz7hw5w')
+@bot.command()
+async def roll(ctx, arg):
+    await CF.roll(ctx, arg)
+
+bot.run(os.getenv('Token'))
