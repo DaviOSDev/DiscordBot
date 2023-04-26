@@ -1,5 +1,0 @@
-discord==1.7.3
-discord.ext==0.8
-discord.py==1.7.3
-python-dotenv==0.20.0
-Pillow==9.2.0
