@@ -1,2 +1,3 @@
-#txt files#
-*.txt
+*.env
+src/Langchain
+src/configs

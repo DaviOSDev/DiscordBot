@@ -1,11 +1,8 @@
-import random
 import os
-import discord
 from discord.ext import commands
 from dotenv import load_dotenv , find_dotenv
-from PIL import Image, ImageDraw, ImageFont
-from io import BytesIO
-import commandFunctions as CF
+from Commands import commandFunctions, IACommands
+from CodeTools import functions
 
 bot = commands.Bot('?')
 
@@ -16,11 +13,17 @@ async def on_ready():
     print(f"Logged as {bot.user}!")
 
 @bot.command()
-async def char(ctx, arg='aleatorio'):
-    await CF.char(ctx, arg)
+async def char(ctx, *arg):
+    arg = functions.transformTupleToString(arg)
+    await commandFunctions.char(ctx, arg)
 
 @bot.command()
 async def roll(ctx, arg):
-    await CF.roll(ctx, arg)
+    await commandFunctions.roll(ctx, arg)
+
+@bot.command()
+async def ask(ctx, *arg):
+    arg = functions.transformTupleToString(arg)
+    await IACommands.askCommand(ctx, arg)
 
 bot.run(os.getenv('Token'))

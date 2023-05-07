@@ -3,12 +3,12 @@ import discord
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 
-fonte = ImageFont.truetype('Fonts\Shiver Me Timbers NF.ttf', 35)
-fonte_numeros = ImageFont.truetype('Fonts\Awaken.otf',23)
+fonte = ImageFont.truetype('src\Fonts\Shiver Me Timbers NF.ttf', 35)
+fonte_numeros = ImageFont.truetype('src\Fonts\Awaken.otf',23)
 
 async def char(ctx, arg='aleatorio'):
         
-    image = Image.open('Images\Ficha.png')
+    image = Image.open('src\Images\Ficha.png')
     first_name = ['Lakye', 'Debora' ,'Yasmin', 'Rogerio', 'Will', 'Abigail', 'Zeke', 'Daenerys', 'Jason', 'Albert', 'Jack', 'Marie','Nickola']
     last_name = ['Tesla', 'Curie', 'Mesquita', 'Costa', 'Bourbon', 'Uchoas', 'Lopes', 'Firmino', 'Olivier']
     strengh = random.randint(1, 20)
@@ -22,7 +22,7 @@ async def char(ctx, arg='aleatorio'):
     intelligence_draw = ImageDraw.Draw(image)
     wisdom_draw = ImageDraw.Draw(image)
     dexterity_draw = ImageDraw.Draw(image)
-    constitution_draw = ImageDraw.Draw(image)
+    constitution_draw = ImageDraw.Draw(image)   
     charm_draw = ImageDraw.Draw(image)
     strengh_draw.line(((285), (317))) #x
     strengh_draw.line(((77), (112))) #y
@@ -58,16 +58,16 @@ async def roll(ctx, arg):
     try:
         arg = int(arg)
         n = random.randint(1, arg)
-        dado_image = Image.open("Dado.png")
+        dado_image = Image.open("Images\Dado.png")
         dado_draw = ImageDraw.Draw(dado_image)
         dado_draw.line(((18), (182))) #x
         dado_draw.line(((9), (191))) #y
-        fonte_numeros = ImageFont.truetype('Awaken.otf',50)
         dado_draw.text(xy=(100, 110), text=f"{n}", fill=(255, 255, 255), anchor= "mm", font=fonte_numeros)
         bytes_dado = BytesIO()
         dado_image.save(bytes_dado, format="PNG")
         bytes_dado.seek(0)
         dado_file = discord.File(bytes_dado, filename="dado_imageMOD.png")
         await ctx.send(file= dado_file)
-    except:
+    except TypeError as error:
+        print(error)
         await ctx.send("PARA DE MANDAR LETRA FDP")
