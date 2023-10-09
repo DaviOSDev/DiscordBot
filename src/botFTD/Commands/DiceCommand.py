@@ -4,7 +4,7 @@ def roll(ctx, arg):
     string = ""; total =  0
     try:
         for item in arg:
-
+            
             item = prepareItem(item)
 
             if item[0] <= 0 or item[0] > 50:
@@ -14,11 +14,11 @@ def roll(ctx, arg):
             string += f"d{item[1]} " + list[0]
             total += list[1]
 
-            string += f"final Result ==> ({total})"
+        string += f"final Result ==> ({total})"
         return ctx.send(string) 
     except Exception as e:
         print(e)
-        return ctx.send("Wrong template, try: ([ 0 < number < 50 ]d[ 0 < number < 50 ])...")
+        return ctx.send("Wrong template, try: ([ 0 < number <= 50 ]d[number > 0])...")
 
 def rollshow(ctx, arg):
     string = "";total = 0
@@ -36,7 +36,7 @@ def rollshow(ctx, arg):
         return ctx.send(string)
     except Exception as e:
         print(e)
-        return ctx.send("Wrong template, try: ([ 0 < number < 50 ]d[ 0 < number < 50 ])...")
+        return ctx.send("Wrong template, try: ([ 0 < number <= 50 ]d[number > 0])...")
 
 def showDiceResult(numeroDeDados, dado):
     String = f'd{dado}:\n'; total = 0; count =1

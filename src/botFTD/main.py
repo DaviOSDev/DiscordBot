@@ -1,15 +1,27 @@
 import os
+import asyncio
+import discord
 from discord.ext import commands
 from dotenv import load_dotenv , find_dotenv
 from Commands import DiceCommand
+import time
 
-bot = commands.Bot('?')
+intents = discord.Intents.default()
+intents.message_content = True
+intents.voice_states = True
+
+bot = commands.Bot(
+    command_prefix = "?", 
+    intents=intents
+    )
+
+async def load():
+    for file in os.listdir("C:/Users/davik/OneDrive/Desktop/Projetos/DiscordBot/src/botFTD/cogs"):
+        print(file)
+        if file.endswith(".py"):
+            await bot.load_extension(f"cogs.{file[:-3]}")
 
 load_dotenv(find_dotenv())
-
-@bot.event
-async def on_ready():
-    print(f"Logged as {bot.user}!")
 
 @bot.command(description= "Roll dices and shows the result")
 async def roll(ctx, *arg,):
@@ -19,4 +31,14 @@ async def roll(ctx, *arg,):
 async def rollshow(ctx, *arg,):
     await DiceCommand.rollshow(ctx, arg)
 
-bot.run(os.getenv('Token'))
+@bot.event
+async def on_ready():
+    print(f'Logged in as {bot.user} (ID: {bot.user.id})')
+    print('------')
+
+async def main():
+    async with bot:
+        await load()
+        await bot.start(os.getenv('Token'))
+
+asyncio.run(main())
