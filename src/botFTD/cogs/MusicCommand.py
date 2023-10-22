@@ -1,5 +1,5 @@
 import yt_dlp
-from discord.ext import commands
+from discord.ext import commands, tasks
 import discord
 
 yt_dlp.utils.bug_reports_message = lambda: ''
@@ -17,14 +17,23 @@ ffmpegOptions = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnec
 ytdl = yt_dlp.YoutubeDL(ytdlFormmatOptions)
 
 class MusicCommands(commands.Cog):
+    
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.queue = []
         self.isPlaying = False
         self.vc = None
         self.isPaused = False
+        self.volume = 0.7
 
-
+    @tasks.loop(seconds=30)
+    async def checkIsPlaying(self):
+        print("check")
+        if self.isPlaying:
+            pass
+        else:
+            await self.leave()
+ 
     @commands.Cog.listener()
     async def on_ready(self):
         print("Music commands ready...")
@@ -34,25 +43,30 @@ class MusicCommands(commands.Cog):
             data = ytdl.extract_info(f"ytsearch:{url}", download=False)['entries'][0]
         except Exception:
             return False
-        
-        return {'source': data['url'], 'title': data['title']}
+        return {'source': data['url'], 'title': data['title'], 'duration': data['duration']}
 
-    def playnext(self):
-        print(len(self.queue))
+    def playnext(self, ctx):
         if len(self.queue) > 0:
             self.isPlaying = True
-
+            
             url = self.queue[0][0]['source']
 
-            self.queue.pop(0)
+            file = discord.FFmpegPCMAudio(url, **ffmpegOptions,)
+            file = discord.PCMVolumeTransformer(file, volume=self.volume)
 
-            self.vc.play(source=discord.FFmpegPCMAudio(url, **ffmpegOptions,), after=lambda e:  self.playnext())
+            self.queue.pop(0)
+            self.vc.play(source=file, after=lambda e: self.playnext(ctx))
         else:
             self.isPlaying = False
         
+    def prepareArg(self, arg):
+        string = " ".join(arg)
+        return string
+    
     async def playMusic(self, ctx):
         if len(self.queue) > 0:
             self.isPlaying = True
+            
             url = self.queue[0][0]['source']
 
             if self.vc == None or not self.vc.is_conected():
@@ -63,18 +77,22 @@ class MusicCommands(commands.Cog):
                     return
             else:
                 await self.vc.move_to(self.queue[0][1])
-               
+                
+            file = discord.FFmpegPCMAudio(url, **ffmpegOptions)
+
+            file = discord.PCMVolumeTransformer(file, volume=self.volume)
 
             self.queue.pop(0)
-            self.vc.play(source=discord.FFmpegPCMAudio(url, **ffmpegOptions),  after= lambda e: self.playnext())
+            self.vc.play(source=file, after=lambda e: self.playnext(ctx))
+            await self.checkIsPlaying.start()
         else:
             self.isPlaying = False
-            await self.leave(ctx=ctx)
 
     @commands.command(name="play", aliases= ["p"],  help="Plays from a youtube url")
     async def play(self, ctx, *args):
-        
-        url = args[0]
+
+        url = self.prepareArg(args)
+
         voiceChannel = ctx.author.voice.channel
         if voiceChannel is None:
             await ctx.send("Connect to a voice channel first")
@@ -84,8 +102,6 @@ class MusicCommands(commands.Cog):
 
         else: 
             song = self.searchyt(url)
-        
-        print(song) 
 
         if type(song) == type(True):
             await ctx.send("Could'nt download the song")
@@ -114,14 +130,14 @@ class MusicCommands(commands.Cog):
             self.isPlaying = True
             self.vc.resume()
 
-    async def leave(self, ctx):
+    async def leave(self):
         "disconnects the bot from voice"
         if self.vc.is_connected():
             print(f"leaving {self.vc}")
             await self.vc.disconnect()
             self.vc = None
-        else:
-            ctx.send("I'm not in a voice channel")
+            self.isPlaying = False
+            await self.checkIsPlaying().stop()
 
     @commands.command(name="clear-queue", aliases=['c', 'clearq'], help='Clears the queue')
     async def clear(self, ctx):
@@ -134,7 +150,11 @@ class MusicCommands(commands.Cog):
         if self.vc != None:
             await ctx.send("skiping music")
             self.vc.stop()
-            await self.playMusic(ctx)
+            if len(self.queue) == 0:
+                self.isPlaying = False
+                await self.leave()
+            else:
+                self.playnext()
 
     @commands.command(name="show-queue", aliases = ["sq", "showq"], help="show the next 4 music in queue")
     async def showQueue(self, ctx):
@@ -156,6 +176,30 @@ class MusicCommands(commands.Cog):
             string += "```"
             await ctx.send(string)
 
+    @commands.command(name="volume", aliases=["change-volume", "v"], help="changes the music volume to work:(use this command before put musics in queue)")
+    async def changeVolume(self, ctx, *args):
+        volume = int(self.prepareArg(args))
+        try:
+            print("test")
+            if volume > 100 or volume < 0:
+                raise Exception
+            self.volume = volume / 100
+            await ctx.send(f"volume changed to {volume}%")
+        except Exception:
+            print("volume out of index")
+            await ctx.send("volume can be only in range from 0 to 100 ")
+
+    @commands.command(name="stop", aliases=["st", "parar"], help="Stops the music and disconnect the bot")
+    async def stop(self, ctx):
+        
+        if self.vc != None and self.vc.is_playing():
+            self.vc.stop()
+            self.queue = []
+            await self.leave()
+            self.vc = None
+
+        else:
+            await ctx.send("I'm not playing music, bro :slight_frown:")
 
 async def setup(bot):
     await bot.add_cog(MusicCommands(bot))

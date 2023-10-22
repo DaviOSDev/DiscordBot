@@ -1,0 +1,5 @@
+discord==2.3.2
+discord.ext==0.8
+discord.py==2.3.2
+python-dotenv==0.20.0
+ffmpeg==1.4
