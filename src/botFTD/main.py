@@ -14,7 +14,9 @@ bot = commands.Bot(
     )
 
 async def load():
-    for file in os.listdir("C:/Users/davik/OneDrive/Desktop/Projetos/DiscordBot/src/botFTD/cogs"):
+    dirname = os.path.dirname(__file__)
+    filename = os.path.join(dirname, 'cogs')
+    for file in os.listdir(filename):
         if file.endswith(".py"):
             await bot.load_extension(f"cogs.{file[:-3]}")
 

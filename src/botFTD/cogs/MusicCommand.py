@@ -25,18 +25,46 @@ class MusicCommands(commands.Cog):
         self.vc = None
         self.isPaused = False
         self.volume = 0.7
+        self.musicTime = 0
+        self.changeLoopTime = False
+        self.ctx = None;self.currentSong = ""
 
-    @tasks.loop(seconds=30)
+    @tasks.loop()
     async def checkIsPlaying(self):
-        print("check")
-        if self.isPlaying:
-            pass
+        if self.changeLoopTime:
+            await self.ctx.send(f"Now playing: {self.currentSong}")
+            self.checkIsPlaying.change_interval(seconds=self.musicTime)
+            print("debbbuging...")
+            self.changeLoopTime = False
         else:
-            await self.leave()
- 
+            print("checking if is playing...")
+
+            print(self.isPlaying)
+            if self.vc.is_playing():
+                print("is playing")
+                self.checkIsPlaying.change_interval(seconds=0)
+                pass
+            else:
+                print("is not playing, leaving channel...")
+                await self.leave()
+    
     @commands.Cog.listener()
     async def on_ready(self):
         print("Music commands ready...")
+
+    async def checkVoiceChannel(self, ctx):
+        if self.vc == None or not self.vc.is_conected():
+                self.vc = await self.queue[0][1].connect()
+
+                if self.vc == None:
+                    ctx.send("Could'nt connect to the channel")
+                    return
+        elif self.vc != ctx.author.voice.channel:
+            await self.vc.move_to(self.queue[0][1])
+
+        else:
+            return self.vc
+                
 
     def searchyt(self, url):
         try:
@@ -48,13 +76,15 @@ class MusicCommands(commands.Cog):
     def playnext(self, ctx):
         if len(self.queue) > 0:
             self.isPlaying = True
-            
+            self.ctx = ctx
+            self.currentSong = self.queue[0][0]['title']
             url = self.queue[0][0]['source']
 
-            file = discord.FFmpegPCMAudio(url, **ffmpegOptions,)
+            file = discord.FFmpegPCMAudio(url, **ffmpegOptions)
             file = discord.PCMVolumeTransformer(file, volume=self.volume)
-
+            self.musicTime = self.queue[0][0]['duration']
             self.queue.pop(0)
+            self.changeLoopTime = True
             self.vc.play(source=file, after=lambda e: self.playnext(ctx))
         else:
             self.isPlaying = False
@@ -65,26 +95,23 @@ class MusicCommands(commands.Cog):
     
     async def playMusic(self, ctx):
         if len(self.queue) > 0:
+            self.ctx = ctx
+            self.currentSong = self.queue[0][0]['title']
             self.isPlaying = True
-            
+            await self.checkVoiceChannel(ctx)
+
             url = self.queue[0][0]['source']
 
-            if self.vc == None or not self.vc.is_conected():
-                self.vc = await self.queue[0][1].connect()
-
-                if self.vc == None:
-                    ctx.send("Could'nt connect to the channel")
-                    return
-            else:
-                await self.vc.move_to(self.queue[0][1])
-                
             file = discord.FFmpegPCMAudio(url, **ffmpegOptions)
 
             file = discord.PCMVolumeTransformer(file, volume=self.volume)
 
+            self.musicTime = self.queue[0][0]['duration']
             self.queue.pop(0)
             self.vc.play(source=file, after=lambda e: self.playnext(ctx))
+            self.changeLoopTime = True
             await self.checkIsPlaying.start()
+
         else:
             self.isPlaying = False
 
@@ -92,7 +119,7 @@ class MusicCommands(commands.Cog):
     async def play(self, ctx, *args):
 
         url = self.prepareArg(args)
-
+       
         voiceChannel = ctx.author.voice.channel
         if voiceChannel is None:
             await ctx.send("Connect to a voice channel first")
@@ -110,7 +137,6 @@ class MusicCommands(commands.Cog):
             self.queue.append([song, voiceChannel])
 
             if self.isPlaying == False:
-                await ctx.send(f"Now Playing: {self.queue[0][0]['title']}")
                 await self.playMusic(ctx)
 
     @commands.command(name="pause", help="Pause the queue")
@@ -137,7 +163,7 @@ class MusicCommands(commands.Cog):
             await self.vc.disconnect()
             self.vc = None
             self.isPlaying = False
-            await self.checkIsPlaying().stop()
+            await self.checkIsPlaying().cancel()
 
     @commands.command(name="clear-queue", aliases=['c', 'clearq'], help='Clears the queue')
     async def clear(self, ctx):
@@ -196,7 +222,6 @@ class MusicCommands(commands.Cog):
             self.vc.stop()
             self.queue = []
             await self.leave()
-            self.vc = None
 
         else:
             await ctx.send("I'm not playing music, bro :slight_frown:")
