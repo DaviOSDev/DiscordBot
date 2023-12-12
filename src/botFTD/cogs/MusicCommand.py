@@ -1,53 +1,63 @@
 import yt_dlp
 from discord.ext import commands, tasks
 import discord
+import threading
+import asyncio
 
 yt_dlp.utils.bug_reports_message = lambda: ''
+
 
 ytdlFormmatOptions = {
 
     'format': 'bestaudio',
-    'noplaylist': 'True',
-    
+    'noplaylist': True,
+    "ignoreerrors": True,
+    "quiet": True,
+    "skip_download": True,
+    "no_warnings": True,
+    "playlist_items": "1",
 }
+
+
+
 
 ffmpegOptions = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
 
-
-ytdl = yt_dlp.YoutubeDL(ytdlFormmatOptions)
-
 class MusicCommands(commands.Cog):
-    
+
     def __init__(self, bot: commands.Bot):
+        self.ytdl = yt_dlp.YoutubeDL(ytdlFormmatOptions)
         self.bot = bot
         self.queue = []
-        self.isPlaying = False
+        self.isPlaying : bool = False
         self.vc = None
-        self.isPaused = False
-        self.volume = 0.7
-        self.musicTime = 0
-        self.changeLoopTime = False
-        self.ctx = None;self.currentSong = ""
+        self.isPaused : bool= False
+        self.volume : float = 0.7
+        self.musicTime : int = 0
+        self.changeLoopTime : bool = False
+        self.ctx = None
+        self.currentSong : str = ""
 
     @tasks.loop()
     async def checkIsPlaying(self):
+        print("checkIsPlaying loop started")
         if self.changeLoopTime:
-            await self.ctx.send(f"Now playing: {self.currentSong}")
-            self.checkIsPlaying.change_interval(seconds=self.musicTime)
-            print("debbbuging...")
+            await self.ctx.send(f":microphone:  Now playing: {self.currentSong}")
+            print(f"changing loop time to : {self.musicTime - 1}")
+            self.checkIsPlaying.change_interval(seconds=self.musicTime - 1)
+            print("loop time changed")
             self.changeLoopTime = False
+            print(self.changeLoopTime)
         else:
             print("checking if is playing...")
-
-            print(self.isPlaying)
-            if self.vc.is_playing():
+            if self.isPlaying:
                 print("is playing")
-                self.checkIsPlaying.change_interval(seconds=0)
+                self.checkIsPlaying.change_interval(seconds=0.5)
                 pass
             else:
                 print("is not playing, leaving channel...")
                 await self.leave()
-    
+            
     @commands.Cog.listener()
     async def on_ready(self):
         print("Music commands ready...")
@@ -61,14 +71,14 @@ class MusicCommands(commands.Cog):
                     return
         elif self.vc != ctx.author.voice.channel:
             await self.vc.move_to(self.queue[0][1])
+            return ctx.author.voice.channel
 
         else:
             return self.vc
                 
-
     def searchyt(self, url):
         try:
-            data = ytdl.extract_info(f"ytsearch:{url}", download=False)['entries'][0]
+            data = self.ytdl.extract_info(f"ytsearch:{url}", download=False)['entries'][0]
         except Exception:
             return False
         return {'source': data['url'], 'title': data['title'], 'duration': data['duration']}
@@ -81,7 +91,8 @@ class MusicCommands(commands.Cog):
             url = self.queue[0][0]['source']
 
             file = discord.FFmpegPCMAudio(url, **ffmpegOptions)
-            file = discord.PCMVolumeTransformer(file, volume=self.volume)
+ 
+
             self.musicTime = self.queue[0][0]['duration']
             self.queue.pop(0)
             self.changeLoopTime = True
@@ -110,8 +121,8 @@ class MusicCommands(commands.Cog):
             self.queue.pop(0)
             self.vc.play(source=file, after=lambda e: self.playnext(ctx))
             self.changeLoopTime = True
+            print("starting checkIsPlaying loop")
             await self.checkIsPlaying.start()
-
         else:
             self.isPlaying = False
 
@@ -133,8 +144,9 @@ class MusicCommands(commands.Cog):
         if type(song) == type(True):
             await ctx.send("Could'nt download the song")
         else:
-            await ctx.send(f"{song['title']} added to the queue")
+            await ctx.send(f":dvd: {song['title']} added to the queue")
             self.queue.append([song, voiceChannel])
+            self.ctx = ctx
 
             if self.isPlaying == False:
                 await self.playMusic(ctx)
@@ -160,65 +172,51 @@ class MusicCommands(commands.Cog):
         "disconnects the bot from voice"
         if self.vc.is_connected():
             print(f"leaving {self.vc}")
-            await self.vc.disconnect()
+            await self.ctx.send(" :regional_indicator_f: leaving...")
+            await self.vc.disconnect(force=True)
+            self.checkIsPlaying.cancel()
             self.vc = None
             self.isPlaying = False
-            await self.checkIsPlaying().cancel()
-
+            
     @commands.command(name="clear-queue", aliases=['c', 'clearq'], help='Clears the queue')
     async def clear(self, ctx):
         print("Clearing queue...")
         self.queue = []
-        await ctx.send("Music queue cleared")
+        await ctx.send(":broom: Music queue cleared")
 
-    @commands.command(name="next", aliases=["skip"], help="skips the current music(if there's no other music it leaves the channel)")
+    @commands.command(name="skip", aliases=["next"], help="skips the current music(if there's no other music it leaves the channel)")
     async def skip(self, ctx):
         if self.vc != None:
-            await ctx.send("skiping music")
+            await ctx.send(":fast_forward: Skiping music")
             self.vc.stop()
             if len(self.queue) == 0:
                 self.isPlaying = False
                 await self.leave()
             else:
-                self.playnext()
+                self.changeLoopTime = False
+                self.checkIsPlaying.cancel()
+                self.checkIsPlaying.restart()
+                await asyncio.sleep(1)
+                await self.playMusic(ctx)
 
-    @commands.command(name="show-queue", aliases = ["sq", "showq"], help="show the next 4 music in queue")
+    @commands.command(name="show-queue", aliases = ["sq", "showq"], help="show the next 10 music in queue")
     async def showQueue(self, ctx):
         string = "```"
         if len(self.queue) == 0:
-            await ctx.send("There's nothin in queue")
-        
-        elif len(self.queue) >= 4:
-            for i in range(0,3):
-                    string += f"{i+1} - " + self.queue[i][0]['title'] + "\n"
-            
-            string += "```"
-            await ctx.send(string)
-        
+            await ctx.send(":o: There's nothin in queue")
+     
         else:
-            for i in range(0, len(self.queue)):
-                string += f"{i+1} - " + self.queue[i][0]['title'] + "\n"
-            
+            for i in range(0, 10):
+                try:
+                    string += f"{i+1} - " + self.queue[i][0]['title'] + "\n"
+                except:
+                    break
             string += "```"
             await ctx.send(string)
-
-    @commands.command(name="volume", aliases=["change-volume", "v"], help="changes the music volume to work:(use this command before put musics in queue)")
-    async def changeVolume(self, ctx, *args):
-        volume = int(self.prepareArg(args))
-        try:
-            print("test")
-            if volume > 100 or volume < 0:
-                raise Exception
-            self.volume = volume / 100
-            await ctx.send(f"volume changed to {volume}%")
-        except Exception:
-            print("volume out of index")
-            await ctx.send("volume can be only in range from 0 to 100 ")
 
     @commands.command(name="stop", aliases=["st", "parar"], help="Stops the music and disconnect the bot")
     async def stop(self, ctx):
-        
-        if self.vc != None and self.vc.is_playing():
+        if self.vc != None and self.isPlaying:
             self.vc.stop()
             self.queue = []
             await self.leave()
@@ -226,5 +224,85 @@ class MusicCommands(commands.Cog):
         else:
             await ctx.send("I'm not playing music, bro :slight_frown:")
 
+    @commands.command(name="play-playlist", aliases=["pp", "playp"], help="Plays a playlist from a youtube url")
+    async def playPlaylist(self, ctx, *args):
+        url = self.prepareArg(args)
+        voiceChannel = ctx.author.voice.channel
+
+        GETPLAYLISTSIZEOPTIONS = {
+            "quiet": False,
+            "ignoreerrors": True,
+            "skip_download": True,
+            "no_warnings": True,
+            "playlistend" : 0,
+        }
+
+        ytdlp = yt_dlp.YoutubeDL(GETPLAYLISTSIZEOPTIONS)
+
+        def getPlaylistSize(playlisturl : str) -> int:
+            try:
+                info = ytdlp.extract_info(playlisturl, download=False)
+                return info["playlist_count"]
+            except Exception:
+                return -1
+  
+        playlistSize = getPlaylistSize(url)
+        print(playlistSize)
+
+        if playlistSize == -1:
+            await ctx.send("Could'nt download the playlist")
+            return
+            
+        if voiceChannel is None:
+            await ctx.send("Connect to a voice channel first")
+        
+        elif self.isPaused:
+            self.vc.resume()
+
+        else:
+            firstSong = self.searchytPlaylist(url)
+
+            if type(firstSong) == type(True):
+                await ctx.send("Could'nt download the song")
+            else:
+                self.queue.append([firstSong, voiceChannel])
+                if not self.isPlaying:
+                    threadInputMusics = threading.Thread(target=self.inputMusicsInQueue, args=(url, playlistSize, voiceChannel))
+                    if __name__ == "cogs.MusicCommand":
+                        threadInputMusics.start()
+                        await self.playMusic(ctx)
+                        threadInputMusics.join()
+                        await ctx.send("Playlist added to queue")
+                else:
+                    self.queue.append([firstSong, voiceChannel])
+                    self.inputMusicsInQueue(url, playlistSize, voiceChannel)
+                    return
+    
+    def searchytPlaylist(self, url: str, youtubedlOptions = ytdlFormmatOptions):
+        try:
+            data = yt_dlp.YoutubeDL(youtubedlOptions).extract_info(url, download=False)['entries'][0]
+
+        except Exception:
+            return False
+        return {'source': data['url'], 'title': data['title'], 'duration': data['duration']}
+
+    def inputMusicsInQueue(self, playlistURL : str, playlistSize : int, voiceChannel) -> str:
+        print("inserting musics in queue")
+        for i in range(2, playlistSize):
+            ytdlFormmatOptions["playlist_items"] = f"{i}"
+            print(f"downloading music {ytdlFormmatOptions['playlist_items']}")
+            song = self.searchytPlaylist(playlistURL, ytdlFormmatOptions)
+            self.queue.append([song, voiceChannel])
+
+        ytdlFormmatOptions["playlist_items"] = "1"
+        return "All musics added to queue"
+
+    @commands.command(name="shuffle", aliases=["sh", "embaralhar"], help="Shuffles the queue")
+    async def shuffle(self, ctx) -> None:
+        """Shuffles the queue"""
+        import random
+        random.shuffle(self.queue)
+        await ctx.send("Queue shuffled")
+            
 async def setup(bot):
     await bot.add_cog(MusicCommands(bot))
