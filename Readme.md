@@ -1,6 +1,6 @@
 # BotFTD
 
-A Discord bot made by an UFOP student to study some libraries - [Still in production]
+A Discord bot made by an student to learn some libraries - [Still in production]
 ## Topics
 
 - [Commands](#commands)
